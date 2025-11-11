@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jAlbum Photo Management</title>
+    <style>
+        /* Basic CSS for a B/S photo manager interface */
+        body { font-family: sans-serif; margin: 0; background-color: #f4f7f6; }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background-color: #333; color: white; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .sidebar h3 { color: #f90; margin-top: 0; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar li { margin-bottom: 10px; cursor: pointer; }
+        .sidebar li:hover { color: #f90; }
+        .main-content { flex-grow: 1; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .photo-item { background-color: white; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
+        .photo-item img { width: 100%; height: 200px; object-fit: cover; }
+        .photo-info { padding: 10px; font-size: 0.9em; }
+        @media (max-width: 600px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="sidebar">
+        <h3>Archives</h3>
+        <ul id="archive-list">
+            <li onclick="loadContent('2024')">🗓️ 2024</li>
+            <li onclick="loadContent('2023')">🗓️ 2023</li>
+            <li onclick="loadContent('faces')">👤 Faces Collection</li>
+            <li onclick="loadContent('duplicates')">🚫 Duplicate Photos</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Photo Gallery: <span id="current-view">All Photos</span></h1>
+            <input type="text" id="search-box" placeholder="Search photos...">
+        </div>
+        
+        <div class="photo-grid" id="photo-grid">
+            <p id="loading-message">Loading photos...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ----------------------------------------------------------------
+    // Dummy JavaScript to simulate interaction with the JAlbum Server
+    // ----------------------------------------------------------------
+
+    // Base URL for the jAlbum RESTful API (The Java Servlet endpoints)
+    const API_BASE_URL = '/api/photos'; 
+
+    /**
+     * Simulates fetching photo data from the server.
+     * @param {string} endpoint - The specific endpoint to fetch (e.g., '/2024', '/faces')
+     */
+    async function fetchPhotos(endpoint) {
+        // In a real application, this would be: 
+        // const response = await fetch(`${API_BASE_URL}${endpoint}`);
+        // const data = await response.json();
+        
+        // --- Dummy Data for demonstration ---
+        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+        const data = [
+            { id: 1, title: "Summer Trip", src: "https://via.placeholder.com/200/FF5733/FFFFFF?text=Photo+1", ratio: "4:3" },
+            { id: 2, title: "Family Dinner", src: "https://via.placeholder.com/200/33FF57/FFFFFF?text=Photo+2", ratio: "16:9" },
+            { id: 3, title: "Work Event", src: "https://via.placeholder.com/200/3357FF/FFFFFF?text=Photo+3", ratio: "3:2" }
+        ];
+        return data;
+    }
+
+    /**
+     * Renders photos into the grid.
+     * @param {Array<Object>} photos - List of photo objects.
+     */
+    function renderPhotos(photos) {
+        const grid = document.getElementById('photo-grid');
+        grid.innerHTML = ''; // Clear previous content
+
+        if (photos.length === 0) {
+            grid.innerHTML = '<p>No photos found for this view.</p>';
+            return;
+        }
+
+        photos.forEach(photo => {
+            const item = document.createElement('div');
+            item.className = 'photo-item';
+            
+            // The image source would point to the Servlet serving the photo content
+            item.innerHTML = `
+                <img src="${photo.src}" alt="${photo.title}" loading="lazy">
+                <div class="photo-info">
+                    <strong>${photo.title}</strong><br>
+                    <small>Ratio: ${photo.ratio}</small>
+                </div>
+            `;
+            grid.appendChild(item);
+        });
+    }
+
+    /**
+     * Main function to handle navigation and load content.
+     * @param {string} view - The view to load (e.g., '2024', 'faces').
+     */
+    async function loadContent(view = 'all') {
+        document.getElementById('current-view').textContent = view.toUpperCase();
+        document.getElementById('photo-grid').innerHTML = '<p id="loading-message">Loading photos...</p>';
+
+        try {
+            const endpoint = (view === 'all') ? '/' : `/${view}`;
+            const photos = await fetchPhotos(endpoint);
+            renderPhotos(photos);
+        } catch (error) {
+            document.getElementById('photo-grid').innerHTML = '<p>Error loading content.</p>';
+            console.error('Fetch error:', error);
+        }
+    }
+
+    // Load initial content when the page loads
+    window.onload = () => loadContent('all');
+
+</script>
+</body>
+</html>
